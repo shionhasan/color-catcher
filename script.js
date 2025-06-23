@@ -43,11 +43,30 @@ document.addEventListener("keydown", (e) => {
 function createBall() {
   const ball = document.createElement("div");
   ball.className = "ball";
+
   const color = colors[Math.floor(Math.random() * colors.length)];
   ball.style.background = color;
   ball.style.color = color;
   ball.dataset.color = color;
-  ball.style.left = Math.floor(Math.random() * 380) + "px";
+
+  // Pick a random left position
+  let left;
+  let attempts = 0;
+  const maxAttempts = 10;
+
+  do {
+    left = Math.floor(Math.random() * 380); // 0 to 380
+    attempts++;
+    // Check overlap with existing balls
+  } while (
+    attempts < maxAttempts &&
+    Array.from(document.querySelectorAll(".ball")).some((b) => {
+      const existingLeft = parseInt(b.style.left);
+      return Math.abs(existingLeft - left) < 40; // ensure 40px spacing
+    })
+  );
+
+  ball.style.left = left + "px";
   ball.style.top = "0px";
   game.appendChild(ball);
 }
@@ -106,7 +125,13 @@ function startGame() {
   if (isRunning) return;
   isRunning = true;
   toggleButton.textContent = "Pause";
-  ballInterval = setInterval(createBall, 1000);
+
+  ballInterval = setInterval(() => {
+    for (let i = 0; i < 2; i++) {
+      createBall();
+    }
+  }, 1000); // 2 balls every 1 second
+
   moveInterval = setInterval(moveBalls, 50);
 }
 
